@@ -34,10 +34,10 @@ Use this checklist while reviewing a candidate skill package. Mark each item Yes
 
 ## E. Safety
 
-- [ ] No instruction to exfiltrate credentials or session tokens
-- [ ] No "ignore all other policies" style overrides
-- [ ] Destructive actions require explicit user confirmation
-- [ ] Dual-use or illegal guidance absent
+- [ ] No instruction to collect or forward credentials or session tokens without user need
+- [ ] No instruction to ignore the user's stated safety preferences
+- [ ] Irreversible actions require explicit user confirmation
+- [ ] Guidance stays within normal product/QA use; refuse illegal requests
 
 ## F. Portability
 
@@ -59,6 +59,6 @@ Any one of these ⇒ overall FAIL:
 
 1. Missing or invalid `name` / `description`
 2. No license declaration anywhere
-3. Danger Blocker present
+3. Safety Blocker present
 4. Body has no executable steps
 5. Score total under 80
