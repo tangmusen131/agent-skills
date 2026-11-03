@@ -54,7 +54,7 @@ run(industry_id, date, skip_render=False, narration_override=None,
 
 ## 网页版（webapp.py，Flask）
 
-启动：`python webapp.py [host] [port]`（默认 8000）
+启动：`python webapp.py [host] [port]`（默认 host=`127.0.0.1`，port=`8000`）
 
 商家流程：填商家名建工作区 → 选行业 → 6 槽位素材上传（一次即可）→ 生成文案可手改 → 点生成（约 1 分钟）→ 下载封面+成片。
 
@@ -70,7 +70,7 @@ run(industry_id, date, skip_render=False, narration_override=None,
 
 | 配置 / 环境变量 | 说明 |
 |---|---|
-| `BG_IMAGE` / `MORNING_RADIO_BG_IMAGE` | 封面底图（竖版干净构图，建议 720×1280，无水印；**用户自备，版权自负**） |
+| `BG_IMAGE` / `MORNING_RADIO_BG_IMAGE` | 封面底图（竖版干净构图，建议 720×1280，少边角台标；**用户自备，版权自负**） |
 | `BGM_DIR` / `MORNING_RADIO_BGM_DIR` | BGM 库目录（默认相对平台根 `./bgm`；**用户自备授权曲目**） |
 | `BGM_DEFAULT` / `MORNING_RADIO_BGM_DEFAULT` | 曲库为空时的回退曲 |
 | `PY` / `MORNING_RADIO_PYTHON` | Python 解释器（需可用 ffmpeg + edge-tts + cnlunar + Pillow）；未设则用当前解释器 |
@@ -82,7 +82,7 @@ run(industry_id, date, skip_render=False, narration_override=None,
 
 ## 网页版安全注意
 
-`webapp.py` 默认可绑定 `0.0.0.0`，**无登录鉴权**。仅建议本机或受信内网试用；公网暴露前务必加鉴权、HTTPS 与反向代理。
+`webapp.py` **默认只监听 `127.0.0.1`（本机）**，模板**不附带登录校验**。仅建议本机或受信内网试用；若改为其它监听地址或对公网开放，务必自行加登录校验、HTTPS 与反向代理。上传接口仅接受常见视频扩展名，下载接口限制在 `output/` 目录内。
 
 ## 与单账号流水线文档的关系
 

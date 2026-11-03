@@ -62,7 +62,7 @@ Python 解释器需为含 ffmpeg 调用环境：设置环境变量 `MORNING_RADI
 | 封面无农历 | cnlunar 的 `Lunar()` 必须传 `datetime.datetime`（不是 `date`），异常被吞会静默返回空 |
 | 封面无「早安」大字 | `festival` 未做 `or "早安"` fallback |
 | 首尾不呼应 | CTA 模板漏写 `{kw}` 占位符，或钩子关键词没用【】包裹 |
-| 视频结束旁白没结束 | 旁白守卫 `fit_durations_to_narration` 被绕过/删除 |
+| 视频结束旁白没结束 | 旁白守卫 `fit_durations_to_narration` 被改掉或移除 |
 | 结尾 2s 黑屏 | 某槽位 trim 链被破坏；或淡出参数被改回长尾 |
 | 网页版看不到新行业 | 行业表启动时载入，需重启 webapp；前端 `IND_EMOJI` 也要补表情 |
 | 词库 ImportError | 词库首行要用相对导入 `from .copy_base import build_copy` |
@@ -76,4 +76,4 @@ Python 解释器需为含 ffmpeg 调用环境：设置环境变量 `MORNING_RADI
 
 ## 路线背景
 
-网页版可用于商家自助出片验证；公网部署前请自行加鉴权/反代（默认无登录）。完整引擎代码即本包 `assets/platform/`。单账号文档型说明见可选包 `morning-radio-pipeline`（v2.2.2）；可运行实现以本包为准。BGM/底图需用户自备并确认版权。
+网页版可用于商家自助出片验证；默认仅监听本机 `127.0.0.1`，模板不附带登录校验——对公网开放前请自行加登录校验与反代。完整引擎代码即本包 `assets/platform/`。单账号文档型说明见可选包 `morning-radio-pipeline`（v2.2.2）；可运行实现以本包为准。BGM/底图需用户自备并确认版权。
