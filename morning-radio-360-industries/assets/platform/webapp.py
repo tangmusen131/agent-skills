@@ -5,11 +5,13 @@
 电脑浏览器操作：选行业 → 传素材 → 出文案（可改）→ 一键生成视频 → 下载
 
 启动：
-  python webapp.py            # 默认 http://127.0.0.1:8000
-  python webapp.py 0.0.0.0 8000   # 部署到服务器供外网访问
+  python webapp.py                 # 默认仅本机 http://127.0.0.1:8000
+  python webapp.py 127.0.0.1 8000  # 同上，显式指定端口
 
 依赖：Flask（渲染环境已装）；渲染底层复用 daily_pipeline.py + render.py
 多商家工作区：每个商家一个 ws_id，素材互不干扰。
+默认只监听本机回环地址。若改为其它监听地址供局域网使用，须自行加登录校验、
+HTTPS 与反向代理——本模板不附带鉴权。
 """
 import os
 import sys
@@ -29,6 +31,8 @@ from industries import INDUSTRIES, load_copy_module
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 512 * 1024 * 1024  # 单次上传上限 512MB
+
+ALLOWED_UPLOAD_EXTS = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"}
 
 WORKSPACES_ROOT = os.path.join(SCRIPT_DIR, "workspaces")   # 每商家素材
 OUTPUT_ROOT = os.path.join(SCRIPT_DIR, "output")           # 产物总目录
@@ -122,9 +126,13 @@ def upload_material(ws_id, industry):
     # 清掉该槽位旧文件，保留 01_ 前缀命名规则
     for old in glob.glob(os.path.join(mdir, f"{slot:02d}_*")):
         os.remove(old)
-    ext = os.path.splitext(f.filename or "v.mp4")[1].lower() or ".mp4"
-    if ext not in (".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"):
-        ext = ".mp4"
+    # 只接受视频扩展名；落盘名固定为槽位前缀，忽略客户端原始文件名（防路径注入）
+    raw_name = os.path.basename(f.filename or "")
+    ext = os.path.splitext(raw_name)[1].lower()
+    if ext not in ALLOWED_UPLOAD_EXTS:
+        return jsonify({
+            "error": f"仅支持视频格式: {', '.join(sorted(ALLOWED_UPLOAD_EXTS))}"
+        }), 400
     save_path = os.path.join(mdir, f"{slot:02d}_素材{ext}")
     f.save(save_path)
     return jsonify({"ok": True, "slot": slot, "file": os.path.basename(save_path)})
@@ -215,11 +223,30 @@ def task_status(task_id):
 
 
 # ============= 产物下载 =============
+def _under_root(path, root):
+    """确认 path 落在 root 之内（含 root 自身），避免前缀误判与目录穿越。"""
+    root_abs = os.path.abspath(root)
+    path_abs = os.path.abspath(path)
+    try:
+        common = os.path.commonpath([root_abs, path_abs])
+    except ValueError:
+        return False
+    return common == root_abs
+
+
 @app.route("/files/<path:relpath>")
 def files(relpath):
+    # 仅允许下载平台目录下的产物；拒绝 .. 与越界路径
+    if ".." in relpath.replace("\\", "/").split("/"):
+        return jsonify({"error": "路径不允许"}), 403
     full = os.path.normpath(os.path.join(SCRIPT_DIR, relpath))
-    if not full.startswith(SCRIPT_DIR):  # 防目录穿越
-        return jsonify({"error": "非法路径"}), 403
+    if not _under_root(full, SCRIPT_DIR):
+        return jsonify({"error": "路径不允许"}), 403
+    # 进一步限制为 output/ 下的成片与封面（网页版下载入口）
+    if not _under_root(full, OUTPUT_ROOT):
+        return jsonify({"error": "路径不允许"}), 403
+    if not os.path.isfile(full):
+        return jsonify({"error": "文件不存在"}), 404
     return send_from_directory(os.path.dirname(full), os.path.basename(full))
 
 

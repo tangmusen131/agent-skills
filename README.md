@@ -40,9 +40,11 @@ npx skills add <你的仓库或包地址>
 3. 重启或刷新代理，使新 skill 被索引。
 4. 用描述中的触发场景试跑一次（例如粘贴一份会议记录测试 `decision-log-gatekeeper`）。
 
-### 早安电台素材与字体
+### 早安电台素材、字体与网页版
 
-`morning-radio-360-industries` 与 `morning-radio-pipeline` **不附带** BGM、封面底图、槽位视频或字体。请自行准备这些资产，并确认你拥有使用与再分发的授权；不要分发未获授权的音乐、底图或成片。封面与日历脚本默认尝试 Windows 自带字体；Linux / macOS 请改用你本机已安装的字体（例如思源黑体），并更新脚本里的字体候选列表。
+`morning-radio-360-industries` 与 `morning-radio-pipeline` **不附带** BGM、封面底图、六槽位视频或字体。请自行准备这些资产，并确认你拥有使用与再分发的授权；不要分发未获授权的音乐、底图或成片。封面与日历脚本默认尝试 Windows 自带字体（`msyh` / `simhei`）；Linux / macOS 请改用你本机已安装的字体（例如思源黑体），并更新脚本里的字体候选列表。
+
+网页版 `morning-radio-360-industries/assets/platform/webapp.py` **默认只监听本机** `127.0.0.1`（示例：`python webapp.py 127.0.0.1 8000`），模板不附带登录校验。仅建议在本机或受信内网使用；若改为其它监听地址或对公网开放，请自行加上登录校验、HTTPS 与反向代理。上传接口只接受常见视频扩展名，下载接口限制在平台 `output/` 目录内。素材版权与账号视觉资产由使用者自行负责。
 
 ## 许可建议
 

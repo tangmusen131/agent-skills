@@ -88,7 +88,7 @@ def make_cover(
 ):
     img = Image.open(bg_path).convert("RGB")
 
-    # 去水印：底部裁掉 70px，再 resize 到 720x1280
+    # 裁切底部边距（约 70px），减少底图边框对版式的干扰，再 resize 到 720x1280
     w, h = img.size
     crop_h = min(70, h // 20)
     img = img.crop((0, 0, w, h - crop_h))
