@@ -1,19 +1,22 @@
-# 原创 Agent Skills 第一批（3 个）
+# 原创 Agent Skills（5 个）
 
-本目录包含三个**完全原创**的 Agent Skills 包，按 [Agent Skills](https://agentskills.io/specification) 常见约定编写（`SKILL.md` + 可选 `references/`）。正文为英文，便于全球平台上架；本说明为中文。
+本目录包含五个 Agent Skills 包，按 [Agent Skills](https://agentskills.io/specification) 常见约定编写（`SKILL.md` + 可选 `references/`）。前三个包正文为英文，便于全球平台上架；早安电台两个包为中文工作流与平台代码。本说明为中文。
 
 | 目录 | name | 一句话卖点 |
 |------|------|------------|
 | `skill-acceptance-auditor/` | `skill-acceptance-auditor` | 上架/安装前验收 SKILL.md：评分 + 通过/不通过 + 修改清单（不绑单一商店 API） |
 | `decision-log-gatekeeper/` | `decision-log-gatekeeper` | 把会议/聊天整理成决策日志，强制区分 Decision / Discussion / Open，禁止静默编造决定 |
 | `saas-renewal-brief/` | `saas-renewal-brief` | 根据账单/用量/合同摘录生成续约谈判简报（含砍价锚点与 walk-away；非法律意见） |
+| `morning-radio-360-industries/` | `morning-radio-360-industries` | 多行业「早安电台」日更短视频流水线（词库+渲染+网页版） |
+| `morning-radio-pipeline/` | `morning-radio-pipeline` | 单账号早安电台流水线说明（引擎见 360 assets） |
 
 ## 每个包里有什么
 
 每个子目录至少包含：
 
 - `SKILL.md` — YAML frontmatter（`name`、`description` 等）+ 可执行工作流
-- `references/` — 配套模板或清单（英文）
+
+多数包另有 `references/`（配套模板、清单或架构说明；前三个包为英文）。`morning-radio-pipeline` 只有 `SKILL.md`。`morning-radio-360-industries` 另含 `assets/platform/` 平台代码与 `scripts/`。
 
 ## 如何安装
 
@@ -30,12 +33,16 @@ npx skills add <你的仓库或包地址>
 
 ### 方式 B：手动拷贝
 
-1. 把三个子目录（或你需要的其中一个）复制到代理技能搜索路径，例如：
+1. 把需要的 skill 子目录复制到代理技能搜索路径，例如：
    - `.agents/skills/<skill-name>/`
    - 或客户端文档写明的 `skills/` 目录
 2. 确认文件夹名与 `SKILL.md` frontmatter 里的 `name` 一致。
 3. 重启或刷新代理，使新 skill 被索引。
 4. 用描述中的触发场景试跑一次（例如粘贴一份会议记录测试 `decision-log-gatekeeper`）。
+
+### 早安电台素材与字体
+
+`morning-radio-360-industries` 与 `morning-radio-pipeline` **不附带** BGM、封面底图、槽位视频或字体。请自行准备这些资产，并确认你拥有使用与再分发的授权；不要分发未获授权的音乐、底图或成片。封面与日历脚本默认尝试 Windows 自带字体；Linux / macOS 请改用你本机已安装的字体（例如思源黑体），并更新脚本里的字体候选列表。
 
 ## 许可建议
 
@@ -43,7 +50,7 @@ npx skills add <你的仓库或包地址>
 
 1. 作者字段已设为 GitHub 账号 `tangmusen131`；若要改成真名或组织名，改各 `SKILL.md` 的 `metadata.author` 即可。
 2. 在仓库根目录（或每个 skill 目录）添加 `LICENSE` 文件，版权行写上你的名字与年份。
-3. 若平台要求单独的 `license` 字段，保持与 LICENSE 文件一致（当前 frontmatter 已写 `license: MIT`）。
+3. 若平台要求单独的 `license` 字段，保持与 LICENSE 文件一致（前三个包的 frontmatter 已写 `license: MIT`；`morning-radio-360-industries` 目录内另有 MIT `LICENSE`）。
 
 ## 免责声明
 

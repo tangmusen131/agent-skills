@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>行业早安电台 · 每日短视频生成器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #2c2c2e; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .sub { color: #86868b; font-size: 14px; margin-bottom: 24px; }
+  .steps { display: flex; gap: 8px; margin-bottom: 24px; }
+  .step-chip { flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; background: #e8e8ed; font-size: 13px; color: #86868b; }
+  .step-chip.on { background: #ff7d29; color: #fff; font-weight: bold; }
+  .step-chip.done { background: #ffe3cf; color: #c05a10; }
+  .card { background: #fff; border-radius: 14px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .card h2 { font-size: 16px; margin-bottom: 14px; }
+  .card h2 .tag { font-size: 12px; color: #ff7d29; margin-left: 8px; font-weight: normal; }
+  input[type=text], input[type=date], select { width: 100%; padding: 10px 12px; border: 1px solid #d9d9de; border-radius: 8px; font-size: 15px; }
+  button { padding: 10px 22px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; background: #ff7d29; color: #fff; }
+  button:disabled { background: #d9d9de; cursor: not-allowed; }
+  button.ghost { background: #fff; color: #ff7d29; border: 1px solid #ff7d29; }
+  .industry-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ind { border: 2px solid #e8e8ed; border-radius: 12px; padding: 16px 12px; text-align: center; cursor: pointer; transition: .15s; }
+  .ind:hover { border-color: #ffb37e; }
+  .ind.sel { border-color: #ff7d29; background: #fff7f0; }
+  .ind .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+  .ind .nm { font-size: 15px; font-weight: bold; }
+  .ind .st { font-size: 12px; color: #86868b; margin-top: 4px; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .slot { border: 1.5px dashed #c7c7cc; border-radius: 10px; padding: 12px; text-align: center; }
+  .slot.has { border: 1.5px solid #34c759; background: #f2fbf5; }
+  .slot .no { font-size: 12px; color: #86868b; }
+  .slot .role { font-size: 14px; font-weight: bold; margin: 4px 0; }
+  .slot .tip { font-size: 11px; color: #aeaeb2; margin-bottom: 8px; }
+  .slot input[type=file] { display: none; }
+  .slot label { display: inline-block; padding: 6px 14px; border-radius: 6px; background: #ff7d29; color: #fff; font-size: 13px; cursor: pointer; }
+  .slot.has label { background: #34c759; }
+  .copy-box { background: #f9f9fb; border-radius: 10px; padding: 14px; font-size: 14px; line-height: 2; }
+  .copy-box b { color: #ff7d29; }
+  textarea { width: 100%; min-height: 120px; padding: 12px; border: 1px solid #d9d9de; border-radius: 8px; font-size: 14px; line-height: 1.8; font-family: inherit; }
+  .progress { background: #e8e8ed; border-radius: 8px; height: 12px; overflow: hidden; margin: 12px 0; }
+  .progress .bar { height: 100%; background: #ff7d29; width: 0; transition: width .5s; }
+  .result img { width: 180px; border-radius: 10px; display: block; margin-bottom: 12px; }
+  .dl { display: inline-block; margin-right: 10px; }
+  .err { color: #e0301e; font-size: 13px; margin-top: 8px; }
+  .hide { display: none; }
+  .row { display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>早安电台 · 行业版短视频生成器</h1>
+  <div class="sub">每天一条属于你行业的早安视频：自动文案 + 配音 + 字幕 + 配乐，约 1 分钟出片</div>
+
+  <div class="steps">
+    <div class="step-chip on" id="chip1">① 填商家名</div>
+    <div class="step-chip" id="chip2">② 选行业传素材</div>
+    <div class="step-chip" id="chip3">③ 看文案</div>
+    <div class="step-chip" id="chip4">④ 生成下载</div>
+  </div>
+
+  <div class="card" id="card1">
+    <h2>你的店铺 / 商家名称</h2>
+    <div class="row">
+      <input type="text" id="wsName" placeholder="例如：老张五金建材" style="flex:1">
+      <button id="btnWs">创建工作台</button>
+    </div>
+    <div class="err" id="wsErr"></div>
+  </div>
+
+  <div class="card hide" id="card2">
+    <h2>选择你的行业 <span class="tag" id="wsTag"></span></h2>
+    <div class="industry-grid" id="indGrid"></div>
+    <h2 style="margin-top:20px">上传 6 段竖屏视频素材<span class="tag">只需上传一次，之后每天自动复用</span></h2>
+    <div class="slots" id="slotGrid"></div>
+    <div class="err" id="matErr"></div>
+    <button id="btnNext" style="margin-top:16px" disabled>下一步：生成文案</button>
+  </div>
+
+  <div class="card hide" id="card3">
+    <h2>今天的文案 <span class="tag">可以直接改，改完再生成</span></h2>
+    <div class="row" style="margin-bottom:12px">
+      <input type="date" id="datePick" style="flex:1">
+      <button class="ghost" id="btnCopy">生成文案</button>
+    </div>
+    <div class="copy-box" id="copyView"></div>
+    <h2 style="margin-top:16px">旁白全文（可编辑）</h2>
+    <textarea id="narrEdit"></textarea>
+  </div>
+
+  <div class="card hide" id="card4">
+    <h2>生成视频</h2>
+    <button id="btnRender">开始生成（约 1 分钟）</button>
+    <div class="progress hide" id="progWrap"><div class="bar" id="progBar"></div></div>
+    <div id="progText" style="font-size:13px;color:#86868b"></div>
+    <div class="err" id="renderErr"></div>
+    <div class="result" id="resultBox"></div>
+  </div>
+</div>
+
+<script>
+const SLOT_TIPS = [
+  ["钩子","店铺门面 / 招牌特写"],
+  ["交代","店内环境全景"],
+  ["铺垫","工作 / 服务过程"],
+  ["转折","产品或细节特写"],
+  ["金句","有氛围的空镜头"],
+  ["CTA","收尾镜头（可带logo）"],
+];
+const IND_EMOJI = {beauty:"💅", hardware:"🔧", food:"🍜", fashion:"👗", home:"🏠", fitness:"💪"};
+let WS = null, CUR_IND = null, COPY = null;
+
+const $ = id => document.getElementById(id);
+const setChip = n => [1,2,3,4].forEach(i=>{
+  const c=$("chip"+i); c.className="step-chip"+(i===n?" on":i<n?" done":"");
+});
+
+// ① 工作台
+$("btnWs").onclick = async () => {
+  const name = $("wsName").value.trim();
+  if(!name){ $("wsErr").textContent="请先填写商家名称"; return; }
+  $("wsErr").textContent="";
+  const r = await fetch("/api/workspace",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name})});
+  const j = await r.json();
+  if(!r.ok){ $("wsErr").textContent=j.error; return; }
+  WS = j; localStorage.setItem("zadt_ws", JSON.stringify(WS));
+  enterStep2();
+};
+(async()=>{ // 恢复登录态
+  const saved = localStorage.getItem("zadt_ws");
+  if(saved){
+    const j = JSON.parse(saved);
+    const r = await fetch("/api/workspace/"+j.ws_id);
+    if(r.ok){ WS = await r.json(); $("wsName").value = WS.name; enterStep2(); }
+    else localStorage.removeItem("zadt_ws");
+  }
+})();
+
+// ② 行业 + 素材
+function enterStep2(){
+  $("card2").classList.remove("hide"); setChip(2);
+  $("wsTag").textContent = WS.name;
+  renderIndustries(); renderSlots();
+}
+function renderIndustries(){
+  const g = $("indGrid"); g.innerHTML="";
+  for(const [id,nm] of Object.entries(WS.industries)){
+    const d = document.createElement("div");
+    d.className = "ind"+(id===CUR_IND?" sel":"");
+    d.innerHTML = `<span class="emoji">${IND_EMOJI[id]}</span><div class="nm">${nm}</div><div class="st">${WS.industries[id].ready?"素材已就绪":"未传素材"}</div>`;
+    d.onclick = ()=>{ CUR_IND=id; renderIndustries(); renderSlots(); };
+    g.appendChild(d);
+  }
+}
+function renderSlots(){
+  const g = $("slotGrid"); g.innerHTML="";
+  const st = WS.industries[CUR_IND].slots;
+  SLOT_TIPS.forEach((t,i)=>{
+    const d = document.createElement("div");
+    d.className = "slot"+(st[i]?" has":"");
+    d.innerHTML = `<div class="no">0${i+1}</div><div class="role">${t[0]}</div><div class="tip">${t[1]}</div>
+      <input type="file" accept="video/*"><label>${st[i]?"重新上传":"选择视频"}</label>`;
+    const inp = d.querySelector("input");
+    d.querySelector("label").onclick = e => { e.preventDefault(); inp.click(); };
+    inp.onchange = async ()=>{
+      const fd = new FormData(); fd.append("slot", i+1); fd.append("file", inp.files[0]);
+      const r = await fetch(`/api/workspace/${WS.ws_id}/${CUR_IND}/upload`,{method:"POST",body:fd});
+      const j = await r.json();
+      if(!r.ok){ $("matErr").textContent=j.error; return; }
+      $("matErr").textContent="";
+      const meta = await (await fetch("/api/workspace/"+WS.ws_id)).json();
+      WS = meta; renderIndustries(); renderSlots();
+    };
+    g.appendChild(d);
+  });
+  $("btnNext").disabled = !WS.industries[CUR_IND].ready;
+}
+$("btnNext").onclick = ()=>{ $("card3").classList.remove("hide"); $("card4").classList.remove("hide"); setChip(3); genCopy(); };
+
+// ③ 文案
+$("datePick").valueAsDate = new Date();
+$("btnCopy").onclick = genCopy;
+async function genCopy(){
+  const r = await fetch("/api/copy",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({industry:CUR_IND, date:$("datePick").value})});
+  COPY = await r.json();
+  $("copyView").innerHTML = Object.entries(COPY.slots).map(([k,v])=>`<b>${k}</b>：${v}`).join("<br>");
+  $("narrEdit").value = COPY.narration;
+}
+
+// ④ 渲染
+$("btnRender").onclick = async ()=>{
+  $("renderErr").textContent=""; $("resultBox").innerHTML="";
+  $("btnRender").disabled = true;
+  $("progWrap").classList.remove("hide");
+  const r = await fetch("/api/render",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ws_id:WS.ws_id, industry:CUR_IND, date:$("datePick").value, narration:$("narrEdit").value})});
+  const j = await r.json();
+  if(!r.ok){ $("renderErr").textContent=j.error; $("btnRender").disabled=false; return; }
+  poll(j.task_id);
+};
+function poll(tid){
+  const timer = setInterval(async ()=>{
+    const t = await (await fetch("/api/task/"+tid)).json();
+    const pct = Math.round(t.step/5*100);
+    $("progBar").style.width = pct+"%";
+    $("progText").textContent = `${t.desc}（${pct}%）`;
+    if(t.status==="done"){
+      clearInterval(timer); setChip(4);
+      $("progText").textContent = "生成完成，可以直接下载发布";
+      $("resultBox").innerHTML =
+        `<img src="/files/${t.result.cover}">`+
+        `<a class="dl" href="/files/${t.result.final}" download><button>下载成片视频</button></a>`+
+        `<a class="dl" href="/files/${t.result.cover}" download><button class="ghost">下载封面图</button></a>`;
+      $("btnRender").disabled=false;
+    } else if(t.status==="error"){
+      clearInterval(timer);
+      $("renderErr").textContent = "生成失败：" + t.error;
+      $("btnRender").disabled=false;
+    }
+  }, 1500);
+}
+</script>
+</body>
+</html>
